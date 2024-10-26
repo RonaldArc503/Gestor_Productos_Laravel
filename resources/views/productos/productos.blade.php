@@ -13,9 +13,8 @@
             <h1>Gestión de Inventario</h1>
             <nav>
                 <ul>
-                    <li><a href="/productos">Productos</a></li>
-                    <li><a href="{{ route('pedidos.index') }}">Pedidos</a></li>
-                    <li><a href="{{ route('reportes.index') }}">Reportes de Ventas</a></li>
+                    <li><a href="{{ route('productos.index') }}">Productos</a></li>
+              
                 </ul>
             </nav>
         </header>
@@ -39,7 +38,7 @@
                             <tr>
                                 <td>{{ $producto->nombre }}</td>
                                 <td>{{ $producto->categoria }}</td>
-                                <td>{{ $producto->precio }}</td>
+                                <td>{{ number_format($producto->precio, 2, ',', '.') }} €</td> <!-- Formato de precio -->
                                 <td>{{ $producto->cantidad_stock }}</td>
                                 <td>
                                     <a href="{{ route('productos.edit', $producto->id) }}" class="btn btn-secondary">Editar</a>

@@ -2,64 +2,43 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Producto;
 use Illuminate\Http\Request;
+use App\Services\FirebaseService;
 
 class ProductoController extends Controller
 {
-    public function index() {
-        // Obtener todos los productos y pasarlos a la vista
-        $productos = Producto::all();
-        return view('productos.index', compact('productos'));
+    protected $firebaseService;
+
+    public function __construct(FirebaseService $firebaseService)
+    {
+        $this->firebaseService = $firebaseService;
     }
 
-    public function create() {
-        // Mostrar el formulario de creación de un nuevo producto
-        return view('productos.create');
-    }
-
-    public function store(Request $request) {
-        // Validar la solicitud
+    public function store(Request $request)
+    {
+        // Validar los datos del formulario
         $request->validate([
-            'nombre' => 'required',
+            'nombre' => 'required|string|max:255',
+            'categoria' => 'required|string|max:255',
             'precio' => 'required|numeric',
-            'categoria' => 'required',
             'cantidad_stock' => 'required|integer',
         ]);
 
-        // Crear un nuevo producto
-        Producto::create($request->all());
+        // Obtener un ID único para el producto (puedes usar un UUID o algún otro método)
+        $id = uniqid(); // Genera un ID único
 
-        // Redirigir a la lista de productos con un mensaje de éxito
-        return redirect()->route('productos.index')->with('success', 'Producto añadido con éxito');
-    }
+        // Preparar los datos del producto
+        $producto = [
+            'nombre' => $request->input('nombre'),
+            'categoria' => $request->input('categoria'),
+            'precio' => $request->input('precio'),
+            'cantidad_stock' => $request->input('cantidad_stock'),
+        ];
 
-    public function edit(Producto $producto) {
-        // Mostrar el formulario de edición con los datos del producto existente
-        return view('productos.edit', compact('producto'));
-    }
+        // Llamar al método para agregar el producto
+        $this->firebaseService->addProducto($id, $producto);
 
-    public function update(Request $request, Producto $producto) {
-        // Validar la solicitud
-        $request->validate([
-            'nombre' => 'required',
-            'precio' => 'required|numeric',
-            'categoria' => 'required',
-            'cantidad_stock' => 'required|integer',
-        ]);
-
-        // Actualizar los datos del producto
-        $producto->update($request->all());
-
-        // Redirigir a la lista de productos con un mensaje de éxito
-        return redirect()->route('productos.index')->with('success', 'Producto actualizado con éxito');
-    }
-
-    public function destroy(Producto $producto) {
-        // Eliminar el producto
-        $producto->delete();
-
-        // Redirigir a la lista de productos con un mensaje de éxito
-        return redirect()->route('productos.index')->with('success', 'Producto eliminado con éxito');
+        // Redirigir o retornar respuesta
+        return redirect()->route('productos.index')->with('success', 'Producto agregado exitosamente.');
     }
 }
